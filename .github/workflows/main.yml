@@ -30,7 +30,7 @@ jobs:
         echo "Machine ID: ${{ matrix.bruh-id }}"
 
     - name: Execute m.js on bruh machine
-      run: node m.js 250 https://rapidis.gay/7778079525-435eb0ec-f821-4c91-a44f-da4276997baf 4 h1 
+      run: node m.js https://rapidis.gay/6901966783-d311eef2-9db4-4e66-a28b-91c5b21638dc 250  4 h1 
       env:
         BRUH_MACHINE_ID: ${{ matrix.bruh-id }}
         TOTAL_BRUH_MACHINES: 10
