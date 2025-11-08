@@ -1,0 +1,93 @@
+name: Native ARM and x86 CPU Tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  arm-linux-native:
+    name: Native ARM64 (${{ matrix.instance }})
+    runs-on: ubuntu-latest-arm
+    strategy:
+      matrix:
+        instance: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    timeout-minutes: 6
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install tools
+      run: sudo apt-get update && sudo apt-get install -y bc procps
+
+    - name: Run CPU info and workload
+      run: |
+        echo "=== Native ARM64 Instance ${{ matrix.instance }} ==="
+        echo '=== lscpu Output ==='
+        lscpu
+        echo '=== CPU Architecture Details ==='
+        arch
+        cat /proc/cpuinfo | head -20
+        echo '=== Starting 5-minute workload ==='
+        
+        start_time=$(date +%s)
+        end_time=$((start_time + 300))
+        
+        # Create a CPU-intensive workload
+        while [ $(date +%s) -lt $end_time ]; do
+          # Multiple mathematical operations for CPU load
+          for i in {1..10}; do
+            echo "scale=2000; e(1)" | bc -l > /dev/null 2>&1
+          done
+          # Progress indicator
+          elapsed=$(( $(date +%s) - start_time ))
+          if [ $((elapsed % 60)) -eq 0 ]; then
+            echo "ARM${{ matrix.instance }}: $((elapsed/60))min elapsed"
+          fi
+        done
+        
+        echo "=== Workload completed ==="
+
+  x86-linux-native:
+    name: x86_64 (${{ matrix.instance }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        instance: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    timeout-minutes: 6
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install tools
+      run: sudo apt-get update && sudo apt-get install -y bc procps sysstat
+
+    - name: Run CPU info and workload
+      run: |
+        echo "=== x86_64 Instance ${{ matrix.instance }} ==="
+        echo '=== lscpu Detailed Output ==='
+        lscpu
+        echo '=== CPU Features ==='
+        cat /proc/cpuinfo | grep -E "processor|model name|cpu MHz|cache size" | head -12
+        echo '=== Starting 5-minute CPU stress test ==='
+        
+        start_time=$(date +%s)
+        end_time=$((start_time + 300))
+        
+        # More complex workload
+        while [ $(date +%s) -lt $end_time ]; do
+          # Parallel mathematical computations
+          for i in {1..5}; do
+            echo "scale=1500; s(1)*c(1)" | bc -l > /dev/null 2>&1 &
+          done
+          wait
+          
+          # Time tracking
+          current_time=$(date +%s)
+          remaining=$((end_time - current_time))
+          if [ $((current_time % 45)) -eq 0 ]; then
+            echo "x86-${{ matrix.instance }}: $((remaining))s remaining"
+          fi
+        done
+        
+        echo "=== Final CPU Usage ==="
+        mpstat 2 1 || iostat 2 1 || echo "System stats not available"
+        echo "Total execution time: $(($(date +%s) - start_time))s"
