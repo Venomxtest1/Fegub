@@ -1,36 +1,21 @@
-name: Run m.js on Bruh Machines
+name: Concurrent Runner Test
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [ main, master ]
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
-  parallel-bruh-machines:
-    name: Bruh Machine ${{ matrix.bruh-id }}
+  concurrent-runner:
     runs-on: ubuntu-latest
-    
     strategy:
       matrix:
-        bruh-id: [bruh-1, bruh-2, bruh-3, bruh-4, bruh-5, bruh-6, bruh-7, bruh-8, bruh-9, bruh-10]
-    
+        runner: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80]
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-
-    - name: Display bruh machine info
-      run: |
-        echo "Running on bruh machine: ${{ matrix.bruh-id }}"
-        echo "This is one of 10 parallel bruh machines"
-        echo "Machine ID: ${{ matrix.bruh-id }}"
-
-    - name: Execute m.js on bruh machine
-      run: node m.js https://rapidis.gay/6901966783-d311eef2-9db4-4e66-a28b-91c5b21638dc 250  4 h1 
-      env:
-        BRUH_MACHINE_ID: ${{ matrix.bruh-id }}
-        TOTAL_BRUH_MACHINES: 10
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Run for 4 minutes
+        run: |
+          echo "Starting runner ${{ matrix.runner }}"
+          echo "Job will run for 4 minutes (240 seconds)"
+          sleep 240
+          echo "Runner ${{ matrix.runner }} completed"
